@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="MAIN" Id="{1b9a2163-48f3-4413-8857-cb509ce1b748}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	bInit: BOOL := TRUE;
+	fbSocketCloseAll: FB_SocketCloseAll; 
+	bSocketCloseError: BOOL;
+	nSocketCloseError: UDINT;
+	
+		fbAsyril_Client				: FB_Asyil_Client;
+		sClient1SendData			: STRING 				:= 'get_recipe_list';		// Auszuführender Befehl
+		nServer1Port				: UDINT 				:= 7171;					// Port des Geräts
+		sServer1Host				: T_IPv4Addr 			:= '192.168.1.50'; 			// IP des Geräts
+		bStartClient1Communication	: BOOL 					:= TRUE;
+		tClient1CycleTime			: TIME 					:= T#0.5S;
+		bClient1SendTrigger			: BOOL; 
+		bClient1Connected			: BOOL;
+		sClient1ReceivedData		: STRING;											// Antowort
+		bClient1Busy				: BOOL;
+		bClientError1				: BOOL;
+		nClient1ErrorID1			: UDINT;		
+		bReady						: BOOL;												// Trigger
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bInit THEN 				// Init Step to close all sockets after login PLC with  downlaod
+	fbSocketCloseAll(
+		sSrvNetId:= '', 
+		bExecute:= TRUE, 
+		tTimeout:= T#3S, 
+		bBusy=> , 
+		bError=> bSocketCloseError, 
+		nErrId=> nSocketCloseError);
+	IF NOT (fbSocketCloseAll.bBusy OR fbSocketCloseAll.bError) THEN
+		bInit := FALSE;
+		fbSocketCloseAll(bExecute:= FALSE);
+	END_IF
+ELSE
+	
+	fbAsyril_Client(
+		nRemotePort:= nServer1Port, 								// Server port
+		sRemoteHost:= sServer1Host, 								// Server IP (empty for local communication)
+		bStartCommunication:= bStartClient1Communication, 			// Start communication, when FALSE, connection is closed
+		sSendData:= sClient1SendData, 								// Data that are sent to the server
+		tCycleTimeSend:= (*tClient1CycleTime*), 					// TimeInterval for cyclic sending
+		bSendTrigger:= ,											// Trigger to send one telegramm manually 
+		bConnected => bClient1Connected,							// Switches to TRUE when Client is connected to a server
+		sReceivedData=> sClient1ReceivedData,						// Data that are received
+		bBusy=> bClient1Busy, 
+		bError=> bClientError1, 
+		nErrorID=> nClient1ErrorID1, ); 
+	
+	IF bClient1Connected THEN
+		IF bReady  THEN
+			sClient1SendData := sClient1SendData;
+			fbAsyril_Client.bSendTrigger := TRUE;
+		ELSE
+			fbAsyril_Client.bSendTrigger := FALSE;
+		END_IF
+		bReady := FALSE;
+	END_IF 
+	
+
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="28" Count="33" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="63" Count="2" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

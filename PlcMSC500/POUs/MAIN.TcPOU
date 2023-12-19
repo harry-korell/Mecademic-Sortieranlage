@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="MAIN" Id="{aaef4a91-f27a-4e2a-8fd4-9432a877b2c8}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	bInit: BOOL := TRUE;
+	fbSocketCloseAll: FB_SocketCloseAll; 
+	bSocketCloseError: BOOL;
+	nSocketCloseError: UDINT;
+	
+		fbFBMSCFB_MSC_Client		: FB_MSC_Client;
+		sClient1SendData			: STRING(255) := 'ActivateRobot';					// Auszuführender Befehl
+		nServer1Port				: UDINT 				:= 10000;					// Port des Geräts
+		sServer1Host				: T_IPv4Addr 			:= '192.168.1.20'; 			// IP des Geräts
+		bStartClient1Communication	: BOOL 					:= TRUE;
+		tClient1CycleTime			: TIME 					:= T#0.5S;
+		bClient1SendTrigger			: BOOL;
+		bClient1Connected			: BOOL;
+		sClient1ReceivedData		: STRING(255);										// Antwort
+		bClient1Busy				: BOOL;
+		bClientError1				: BOOL;
+		nClient1ErrorID1			: UDINT;		
+		bReady						: BOOL;												// Trigger
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bInit THEN 				// Init Step to close all sockets after login PLC with  downlaod
+	fbSocketCloseAll(
+		sSrvNetId:= '', 
+		bExecute:= TRUE, 
+		tTimeout:= T#3S, 
+		bBusy=> , 
+		bError=> bSocketCloseError, 
+		nErrId=> nSocketCloseError);
+	IF NOT (fbSocketCloseAll.bBusy OR fbSocketCloseAll.bError) THEN
+		bInit := FALSE;
+		fbSocketCloseAll(bExecute:= FALSE);
+	END_IF
+ELSE
+	
+	fbFBMSCFB_MSC_Client(
+		nRemotePort:= nServer1Port, 								// Server port
+		sRemoteHost:= sServer1Host, 								// Server IP (empty for local communication)
+		bStartCommunication:= bStartClient1Communication, 			// Start communication, when FALSE, connection is closed
+		sSendData:= sClient1SendData, 								// Data that are sent to the server
+		tCycleTimeSend:= (*tClient1CycleTime*), 					// TimeInterval for cyclic sending
+		bSendTrigger:= ,											// Trigger to send one telegramm manually 
+		bConnected => bClient1Connected,							// Switches to TRUE when Client is connected to a server
+		sReceivedData=> sClient1ReceivedData,						// Data that are received
+		bBusy=> bClient1Busy, 
+		bError=> bClientError1, 
+		nErrorID=> nClient1ErrorID1, ); 
+	
+	IF bClient1Connected THEN
+		IF bReady  THEN
+			sClient1SendData;
+			fbFBMSCFB_MSC_Client.bSendTrigger := TRUE;
+		ELSE
+			fbFBMSCFB_MSC_Client.bSendTrigger := FALSE;
+		END_IF
+		bReady := FALSE;
+	END_IF 
+		
+
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="25" Count="37" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

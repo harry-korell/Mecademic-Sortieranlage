@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.53">
+	<Project ProjectGUID="{CEC02218-ECB9-421A-87D1-570320ADC735}" Target64Bit="true" ShowHideConfigurations="#x6">
+		<System>
+			<Settings MaxCpus="8">
+				<Cpu/>
+				<Cpu CpuId="1"/>
+				<Cpu CpuId="2"/>
+				<Cpu CpuId="3"/>
+			</Settings>
+			<Tasks>
+				<Task Id="3" Priority="20" CycleTime="100000" AmsPort="350" Affinity="#x00000001" AdtTasks="true">
+					<Name>PlcMSC</Name>
+				</Task>
+				<Task Id="4" Priority="21" CycleTime="100000" AmsPort="351" Affinity="#x00000002" AdtTasks="true">
+					<Name>PlcAsyril</Name>
+				</Task>
+			</Tasks>
+		</System>
+		<Plc>
+			<Project GUID="{630B01B5-7DB2-4641-B3C2-4E79760FADA5}" Name="PlcMSC500" PrjFilePath="PlcMSC500\PlcMSC500.plcproj" TmcFilePath="PlcMSC500\PlcMSC500.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="PlcMSC500\PlcMSC500.tmc" TmcHash="{0DA01C9A-C265-02FA-E43C-694DE64C5EC8}">
+					<Name>PlcMSC500 Instance</Name>
+					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+					<Contexts>
+						<Context>
+							<Id>0</Id>
+							<Name>PlcTask</Name>
+							<ManualConfig>
+								<OTCID>#x02010030</OTCID>
+							</ManualConfig>
+							<Priority>20</Priority>
+							<CycleTime>10000000</CycleTime>
+						</Context>
+					</Contexts>
+					<TaskPouOids>
+						<TaskPouOid Prio="20" OTCID="#x08502001"/>
+					</TaskPouOids>
+				</Instance>
+			</Project>
+			<Project GUID="{813EFB8F-5AE9-4E05-8ACA-9B8456F4AF03}" Name="PlcAsyril" PrjFilePath="PlcAsyril\PlcAsyril.plcproj" TmcFilePath="PlcAsyril\PlcAsyril.tmc" ReloadTmc="true" AmsPort="852" FileArchiveSettings="#x000e" SymbolicMapping="true">
+				<Instance Id="#x08502040" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="PlcAsyril\PlcAsyril.tmc" TmcHash="{55EEA002-E10F-97A4-188C-B5708779F578}">
+					<Name>PlcAsyril Instance</Name>
+					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+					<Contexts>
+						<Context>
+							<Id>0</Id>
+							<Name>PlcTask</Name>
+							<ManualConfig>
+								<OTCID>#x02010040</OTCID>
+							</ManualConfig>
+							<Priority>21</Priority>
+							<CycleTime>10000000</CycleTime>
+						</Context>
+					</Contexts>
+					<TaskPouOids>
+						<TaskPouOid Prio="21" OTCID="#x08502041"/>
+					</TaskPouOids>
+				</Instance>
+			</Project>
+		</Plc>
+	</Project>
+</TcSmProject>
